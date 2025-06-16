@@ -1,0 +1,30 @@
+{
+  "name": "notifier-service",
+  "version": "1.0.0",
+  "description": "## ویژگی ها سرویس اطلاع رسانی وظیفه ارسال فاکتور به مشتری و ارسال هشدار به مدیریت را دارد. این سرویس قابلیت های زیر را دارد: - فاکتور خرید برای مشتری ارسال شود - در صورت رسیدن موجودی به حد هشدار (۵٪) به مدیریت اطلاع رسانی شود",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "rollup": "rollup index.js --file index.cjs --format cjs",
+    "test": "npx mocha Src/tests/unit/notifier.js",
+    "build": "npm run lint && npm run test && npm run unit && npm run rollup && git add . && git commit -am 'scripts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamtapay-mnr/NotifierService.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hamtapay-mnr/NotifierService/issues"
+  },
+  "homepage": "https://github.com/hamtapay-mnr/NotifierService#readme",
+  "devDependencies": {
+    "eslint": "^9.29.0",
+    "mocha": "^11.6.0"
+  },
+  "dependencies": {
+    "redis": "^5.5.6"
+  }
+}
