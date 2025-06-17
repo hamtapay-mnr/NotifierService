@@ -11,11 +11,28 @@ export class EventQueue {
     // Ensure stream and group exist
     async initStream() {
         try {
-            await this.eventSource.xGroupCreate(this.STREAM_KEY_WRITE, this.GROUP_NAME, '0', { MKSTREAM: true });
-            console.log('Stream group created');
+            if (this.STREAM_KEY_READ) {
+                console.log("Creating group: ", this.STREAM_KEY_READ, this.GROUP_NAME);
+                await this.eventSource.xGroupCreate(this.STREAM_KEY_READ, this.GROUP_NAME, '0', { MKSTREAM: true });
+            }
         } catch (e) {
-            if (!e.message.includes('BUSYGROUP')) throw e;
+            if (!e.message.includes('BUSYGROUP')) {
+                console.log("Error while creating group: ", this.STREAM_KEY_READ, this.GROUP_NAME, e);
+                throw e;
+            };
         }
+        try {
+            if (this.STREAM_KEY_WRITE) {
+                console.log("Creating group: ", this.STREAM_KEY_WRITE, this.GROUP_NAME);
+                await this.eventSource.xGroupCreate(this.STREAM_KEY_WRITE, this.GROUP_NAME, '0', { MKSTREAM: true });
+            }
+        } catch (e) {
+            if (!e.message.includes('BUSYGROUP')) {
+                console.log("Error while creating group: ", this.STREAM_KEY_WRITE, this.GROUP_NAME, e);
+                throw e;
+            };
+        }
+
     }
 
     // Publish event to stream
@@ -30,13 +47,14 @@ export class EventQueue {
             const pending = await this.eventSource.xPending(this.STREAM_KEY_WRITE, this.GROUP_NAME);
             return pending && pending.count > 0;
         } catch (err) {
-            console.error('Error checking pending messages:', err);
+            console.error('Error checking pending messages:', this.STREAM_KEY_WRITE, this.GROUP_NAME, err);
             return false;
         }
     }
 
     // Consume events from stream
     async consumeEvent(handlerFn) {
+        console.log("Start listening to queue:", this.GROUP_NAME, this.STREAM_KEY_READ, this.CONSUMER_NAME);
         while (true) {
             const messages = await this.eventSource.xReadGroup(
                 this.GROUP_NAME,
@@ -48,10 +66,10 @@ export class EventQueue {
                 for (const msg of messages[0].messages) {
                     try {
                         await handlerFn(msg.message);
-                        await this.eventSource.xAck(STREAM_KEY_READ, GROUP_NAME, msg.id);
-                        console.log("Processed new message: ", msg.id, this.GROUP_NAME, this.CONSUMER_NAME);
+                        await this.eventSource.xAck(this.STREAM_KEY_READ, this.GROUP_NAME, msg.id);
+                        console.log("Processed new message: ", msg.id, this.GROUP_NAME, this.STREAM_KEY_READ);
                     } catch (err) {
-                        console.error('Error processing message', msg.id, err);
+                        console.error('Error processing message', msg.id, this.GROUP_NAME, this.STREAM_KEY_READ, err);
                     }
                 }
             }

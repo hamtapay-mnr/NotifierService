@@ -6,8 +6,7 @@ import { NotifierController } from './Src/Controller/notifierController.js';
 // Simulate .env file (no internet to npm i dotenv!)
 process.env.STREAM_KEY_READ = 'price-factor';
 process.env.STREAM_KEY_WRITE = 'user-factor';
-process.env.STREAM_KEY_WRITE_ADMIN = 'user-factor';
-process.env.ADMIN_STREAM_KEY_WRITE = 'admin-warning';
+process.env.STREAM_KEY_WRITE_ADMIN = 'admin-warning';
 process.env.GROUP_NAME = 'order_group';
 process.env.CONSUMER_NAME = 'notifier_service';
 
@@ -27,6 +26,5 @@ await adminEventQueue.initStream();
 const cache = new Cache(redis);
 const notifierController = new NotifierController(cache, eventQueue, adminEventQueue);
 
-console.log("Start listening to price-factor queue");
 await eventQueue.consumeEvent(notifierController.newFactor.bind(notifierController));
 redis.quit();
