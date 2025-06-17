@@ -1,9 +1,11 @@
 import * as Notifier from '../Application/notifier.js';
 export class NotifierController {
-    constructor(cache, eventQueue) {
+    constructor(cache, eventQueue, adminEventQueue) {
         this.cache = cache;
         this.eventQueue = eventQueue;
+        this.adminEventQueue = adminEventQueue;
     }
+
     /**
      * @memberOf NotifierService.Src.Controller.notifierController
      * @summary Retrive an price-factor from queue and process it
@@ -12,12 +14,17 @@ export class NotifierController {
      * @return {Promise} Promise 
      */
     async newFactor(factorString) {
-        const factorObj = JSON.parse(orderString.data);
-        console.log("xcccccccccccc", factorObj);
-        const criticalInventory = Notifier.checkIfInventoryIsLow(factorObj.remainingGoldPercentage);
-        if (criticalInventory)
-            await Notifier.addToAdminQueue({ inventoryRemainingPercentage: factorObj.remainingGoldPercentage }, this.eventQueue);
+        const factorObj = JSON.parse(factorString.data);
+        console.log("Recieved new factor: ", factorObj);
+        const criticalInventory = await Notifier.checkIfInventoryIsLow(factorObj.remainingGoldPercentage, this.cache, this.adminEventQueue);
+        if (criticalInventory) {
+            const adminWarningObject = { inventoryRemainingPercentage: factorObj.remainingGoldPercentage };
+            console.log("Send warning to admin: ", adminWarningObject);
+            await Notifier.addToQueue(adminWarningObject, this.adminEventQueue);
+            await this.cache.setAdminWarning("1"); // optionally use EX
+        }
         const factor = Notifier.createUserFactor(factorObj.amount, factorObj.price, factorObj.username);
-        Notifier.addToFactorQueue(factor, this.eventQueue);
+        console.log("New factor: ", factor);
+        Notifier.addToQueue(factor, this.eventQueue);
     }
 }

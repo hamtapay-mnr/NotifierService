@@ -5,9 +5,12 @@
  * @param {Number} assetPercentage percentage of current asset
  * @return {Boolean} Boolean true if inventory is low, else false
  */
-export function checkIfInventoryIsLow(assetPercentage) {
-    if (assetPercentage < 5)
-        return true;
+export async function checkIfInventoryIsLow(assetPercentage, cache, eventQueue) {
+    if (assetPercentage < 5) {
+        const alreadySent = await cache.getAdminWarning();
+        const hasPending = await eventQueue.hasPendingMessages();
+        return alreadySent == '0' && !hasPending;
+    }
     else return false;
 }
 /**
@@ -32,17 +35,6 @@ export function createUserFactor(amount, price, username) {
  * @param {Object} queue queue object
  * @return {Promise<>} Promise 
  */
-export async function addToFactorQueue(data, eventQueue) {
-    await eventQueue.publishEvent(data);
-}
-/**
- * @memberOf NotifierService.Src.Application.notifier
- * @summary Put request in queue for next service to work
- * @description Put request in queue for next service to work
- * @param {Object} data data to enqueue!
- * @param {Object} queue queue object
- * @return {Promise<>} Promise 
- */
-export async function addToAdminQueue(data, eventQueue) {
+export async function addToQueue(data, eventQueue) {
     await eventQueue.publishEvent(data);
 }
