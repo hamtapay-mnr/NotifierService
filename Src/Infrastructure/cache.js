@@ -3,10 +3,10 @@ export class Cache {
         this.cache = cache;
     }
 
-    async #set(key, value) {
+    #set(key, value) {
         return this.cache.set(key, value);
     }
-    async #get(key) {
+    #get(key) {
         return this.cache.get(key);
     }
     async getMaxAsset() {
@@ -15,7 +15,10 @@ export class Cache {
     async getPrice() {
         return await this.#get('gold-price');
     }
+    async getAdminWarning() {
+        return await this.#get('admin-warning-flag');
+    }
+    async setAdminWarning(state) {
+        return await this.#set('admin-warning-flag', state);
+    }
 }
-
-
-
